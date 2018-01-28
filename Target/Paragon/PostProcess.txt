@@ -1,0 +1,6 @@
+1. Remove PF_MAX in Paragon_CoreUObject_structs.hpp
+2. Remove #include "Paragon_BlueprintContext_classes.hpp" in Paragon_OrionGame_structs.hpp
+3. Remove/Rename void Generic_FadeIn(); in class URewardWidget_C in Paragon_RewardWidget_classes.hpp
+4. Remove/Rename void Upgrade_FadeIn(); in class URewardWidget_ImageOnly_C in Paragon_RewardWidget_ImageOnly_classes.hpp
+5. Remove/Rename void Generic_FadeIn(); in class URewardWidget_ImageOnly_C in Paragon_RewardWidget_ImageOnly_classes.hpp
+6. Rename member "LVL_UP_!_=O;" in class UCardInspectScreen_C in Paragon_CardInspectScreen_classes.hpp

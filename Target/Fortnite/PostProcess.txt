@@ -1,0 +1,33 @@
+These Instance Functions should be implemented in the Generator itself, if possible. 
+class UFortEngine in FN_FortniteGame_classes.hpp:
+static UFortEngine* Instance()
+{
+    static auto* ptr = UObject::FindObject<UFortEngine>(_xor_("FortEngine Transient.FortEngine_1"));
+    return ptr;
+}
+  
+Remove PF_MAX in FN_CoreUObject_structs.hpp
+Rename FuseTimer@Spawn in FN_B_Prj_Ranged_GrenadeLauncher_Athena_classes.hpp
+Rename FuseTimer@Spawn in FN_B_Prj_Ranged_GrenadeLauncher_Snowball_Athena_classes.hpp
+Rename TArray<int>* int to ... int1 in FN_RenderToTextureFunctionLibrary_classes.hpp
+
+Math Functions (+, -, * ... etc.) for Classes like FVector (Can be implemented in the Generator)
+inline FVector() : X(0.f), Y(0.f), Z(0.f) {}
+
+inline FVector(float x, float y, float z) : X(x), Y(y), Z(z) {}
+
+inline FVector operator + (const FVector& other) const {
+    return FVector(X + other.X, Y + other.Y, Z + other.Z);
+}
+
+inline FVector operator - (const FVector& other) const {
+    return FVector(X - other.X, Y - other.Y, Z - other.Z);
+}
+
+inline FVector operator * (float Scalar) const {
+    return FVector(X * Scalar, Y * Scalar, Z * Scalar);
+}
+
+inline float Length() const {
+    return sqrt(X * X + Y * Y + Z * Z);
+}
