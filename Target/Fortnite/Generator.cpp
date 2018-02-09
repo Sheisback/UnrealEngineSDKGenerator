@@ -65,6 +65,16 @@ public:
 			{ "void*", "Func" }
 		};
 
+		predefinedMethods["ScriptStruct CoreUObject.Rotator"] = {
+			PredefinedMethod::Inline(R"(FRotator() {})"),
+			PredefinedMethod::Inline(R"(FRotator(float pitch, float yaw, float roll)
+	{
+		this->Pitch = pitch;
+		this->Yaw = yaw;
+		this->Roll = roll;
+	})"),
+		};
+
 		predefinedMethods["ScriptStruct CoreUObject.Vector2D"] = {
 			PredefinedMethod::Inline(R"(	inline FVector2D()
 		: X(0), Y(0)
@@ -72,7 +82,28 @@ public:
 			PredefinedMethod::Inline(R"(	inline FVector2D(float x, float y)
 		: X(x),
 		  Y(y)
-	{ })")
+	{ })"),
+			PredefinedMethod::Inline(R"(	__forceinline FVector2D operator-(const FVector2D& V) {
+		return FVector2D(X - V.X, Y - V.Y);
+	})"),
+			PredefinedMethod::Inline(R"(	__forceinline float Size() const {
+		return sqrt(X*X + Y*Y);
+	})")
+		};
+
+		predefinedMethods["ScriptStruct CoreUObject.Vector"] = {
+			PredefinedMethod::Inline(R"(inline FVector():X(0), Y(0), Z(0) {})"),
+
+			PredefinedMethod::Inline(R"(inline FVector(float x, float y, float z): X(x), Y(y), Z(z)
+	{
+	})"),
+			PredefinedMethod::Inline(R"(	__forceinline FVector operator-(const FVector& V) {
+		return FVector(X - V.X, Y - V.Y, Z - V.Z);
+	})"),
+
+			PredefinedMethod::Inline(R"(	__forceinline float Size() const {
+		return sqrt(X*X + Y*Y);
+	})")
 		};
 		predefinedMethods["ScriptStruct CoreUObject.LinearColor"] = {
 			PredefinedMethod::Inline(R"(	inline FLinearColor()
@@ -155,8 +186,12 @@ public:
 	{
 		return static_cast<T*>(GetGlobalObjects().GetByIndex(index));
 	})"),
-			PredefinedMethod::Default("bool IsA(UClass* cmp) const", R"(bool UObject::IsA(UClass* cmp) const
-{
+			PredefinedMethod::Default(
+				"bool IsA(UClass* cmp) const", R"(bool UObject::IsA(UClass* cmp) const
+	{
+		if (this == nullptr)
+		return false;
+
 	for (auto super = Class; super; super = static_cast<UClass*>(super->SuperField))
 	{
 		if (super == cmp)
@@ -201,7 +236,7 @@ public:
 
 	std::vector<std::string> GetIncludes() const override
 	{
-		return { "../xorstr.hpp" }; // For xor encrypted Strings
+		return { "xorstr.h", "<math.h>" }; // For xor encrypted Strings
 	}
 
 	std::string GetBasicDeclarations() const override
@@ -276,7 +311,7 @@ private:
 class FUObjectArray
 {
 public:
-	char UnknownData[0xE0];
+	char UnknownData[0x360];
 
 	TUObjectArray ObjObjects;
 };
@@ -298,13 +333,19 @@ public:
 		return Count;
 	};
 
-	inline T& operator[](int i)
+	inline T operator[](int i)
 	{
+		if (i >= Count)
+			return nullptr;
+
 		return Data[i];
 	};
 
-	inline const T& operator[](int i) const
+	inline const T operator[](int i) const
 	{
+		if (i >= Count)
+			return nullptr;
+
 		return Data[i];
 	};
 
@@ -313,8 +354,18 @@ public:
 		return i < Num();
 	}
 
+	T* begin() 
+	{
+		return &Data[0];
+	}
+
+	T* end()
+	{
+		return &Data[Count];
+	}
+
 private:
-	T* Data;
+	T * Data;
 	int32_t Count;
 	int32_t Max;
 };
@@ -346,10 +397,10 @@ public:
 
 	inline const char* GetAnsiName() const
 	{
-		int seed = 0x9C5DA3B4;
+		int seed = 0x9C5C5836;
 		static char buf[1024] = {};
 
-		buf[0] = AnsiName[0] ^ 0xB4;
+		buf[0] = AnsiName[0] ^ 0x36;
 		if (buf[0])
 		{
 			auto index = 0;
@@ -403,9 +454,9 @@ private:
 		ChunkTableSize = (MaxTotalElements + ElementsPerChunk - 1) / ElementsPerChunk
 	};
 
-	char UnknownData[0x1A8];
+	char UnknownData[0x1B8];
 	ElementType** Chunks[ChunkTableSize];
-	char UnknownData2[0x70];
+	char UnknownData2[0x58];
 	__int32 NumElements;
 	__int32 NumChunks;
 };

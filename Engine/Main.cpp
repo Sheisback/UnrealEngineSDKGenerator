@@ -33,6 +33,7 @@ void Dump(const fs::path& path)
 	{
 		std::ofstream o(path / "ObjectsDump.txt");
 		tfm::format(o, "Address: 0x%P\n\n", ObjectsStore::GetAddress());
+		printf("%p \n", ObjectsStore::GetAddress());
 
 		for (auto obj : ObjectsStore())
 		{
@@ -63,6 +64,9 @@ void SaveSDKHeader(const fs::path& path, const std::unordered_map<UEObject, bool
 
 	os << "#pragma once\n\n"
 		<< tfm::format("// %s (%s) SDK\n\n", generator->GetGameName(), generator->GetGameVersion());
+	
+	os << "#undef PF_MAX\n";
+	os << "#undef Seed\n\n";
 
 	//include the basics
 	{
@@ -167,6 +171,7 @@ DWORD WINAPI OnAttach(LPVOID lpParameter)
 		MessageBoxA(nullptr, "ObjectsStore::Initialize failed", "Error", 0);
 		return -1;
 	}
+
 	if (!NamesStore::Initialize())
 	{
 		MessageBoxA(nullptr, "NamesStore::Initialize failed", "Error", 0);
@@ -224,7 +229,9 @@ BOOL WINAPI DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 	{
 	case DLL_PROCESS_ATTACH:
 		DisableThreadLibraryCalls(hModule);
-
+		AllocConsole();
+		FILE* a;
+		freopen_s(&a, "CONOUT$", "w", stdout);
 		CreateThread(nullptr, 0, OnAttach, hModule, 0, nullptr);
 
 		return TRUE;

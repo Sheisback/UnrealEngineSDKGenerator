@@ -321,7 +321,6 @@ void Package::GenerateEnum(const UEEnum& enumObj)
 
 void Package::GenerateConst(const UEConst& constObj)
 {
-	//auto name = MakeValidName(constObj.GetName());
 	auto name = MakeUniqueCppName(constObj);
 
 	if (name.find("Default__") != std::string::npos
@@ -418,7 +417,10 @@ void Package::GenerateClass(const UEClass& classObj)
 	{
 		c.PredefinedMethods.push_back(IGenerator::PredefinedMethod::Inline(tfm::format(R"(	static UClass* StaticClass()
 	{
-		static auto ptr = UObject::FindClass(%s);
+		static UClass* ptr;
+		if(!ptr)
+			ptr = UObject::FindClass(%s);
+
 		return ptr;
 	})", generator->ShouldXorStrings() ? tfm::format("_xor_(\"%s\")", c.FullName) : tfm::format("\"%s\"", c.FullName))));
 	}
@@ -426,7 +428,10 @@ void Package::GenerateClass(const UEClass& classObj)
 	{
 		c.PredefinedMethods.push_back(IGenerator::PredefinedMethod::Inline(tfm::format(R"(	static UClass* StaticClass()
 	{
-		static auto ptr = UObject::GetObjectCasted<UClass>(%d);
+		static UClass* ptr;
+		if(!ptr)
+			ptr = UObject::GetObjectCasted<UClass>(%d);
+
 		return ptr;
 	})", classObj.GetIndex())));
 	}
@@ -1022,11 +1027,12 @@ std::string Package::BuildMethodBody(const Class& c, const Method& m) const
 	std::ostringstream ss;
 
 	//Function Pointer
-	ss << "{\n\tstatic auto fn";
+	ss << "{\n\tstatic UFunction* fn;\n";
+	ss << "\n\t\tif(!fn)\n";
 
 	if (generator->ShouldUseStrings())
 	{
-		ss << " = UObject::FindObject<UFunction>(";
+		ss << "\t\tfn = UObject::FindObject<UFunction>(";
 
 		if (generator->ShouldXorStrings())
 		{
@@ -1041,7 +1047,7 @@ std::string Package::BuildMethodBody(const Class& c, const Method& m) const
 	}
 	else
 	{
-		ss << " = UObject::GetObjectCasted<UFunction>(" << m.Index << ");\n\n";
+		ss << "fn = UObject::GetObjectCasted<UFunction>(" << m.Index << ");\n\n";
 	}
 
 	//Parameters

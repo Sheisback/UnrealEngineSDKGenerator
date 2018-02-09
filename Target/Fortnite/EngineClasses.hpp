@@ -27,34 +27,37 @@ struct TArray
 	friend struct FString;
 
 public:
-	TArray()
+	inline TArray()
 	{
 		Data = nullptr;
 		Count = Max = 0;
 	};
 
-	size_t Num() const
+	inline int Num() const
 	{
 		return Count;
 	};
 
-	T& operator[](size_t i)
+	inline T operator[](int i)
 	{
 		return Data[i];
 	};
 
-	const T& operator[](size_t i) const
+	inline const T operator[](int i) const
 	{
+		if (i >= Count)
+			return nullptr;
+
 		return Data[i];
 	};
 
-	bool IsValidIndex(size_t i) const
+	inline bool IsValidIndex(int i) const
 	{
 		return i < Num();
 	}
 
 private:
-	T* Data;
+	T * Data;
 	int32_t Count;
 	int32_t Max;
 };

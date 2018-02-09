@@ -25,8 +25,7 @@ public:
 class FUObjectArray
 {
 public:
-	char UnknownData[0xE0]; // 4C 8B 81 ? ? ? ? 48 8B F9 48 8D 04 6D ? ? ? ?
-
+	char UnknownData[0x360]; // 4C 8B 81 ? ? ? ? 48 8B F9 48 8D 04 6D ? ? ? ?
 	TUObjectArray ObjObjects;
 };
 
@@ -34,7 +33,7 @@ FUObjectArray* GlobalObjects = nullptr;
 
 bool ObjectsStore::Initialize()
 {
-	const auto address = FindPattern(GetModuleHandleW(L"FortniteClient-Win64-Shipping.exe"), reinterpret_cast<const unsigned char*>("\x48\x8D\x0D\x00\x00\x00\x00\x48\x83\xC4\x38\xE9\x47\xFD\xFF\xFF"), "xxx????xxxxxxxxx");
+	const auto address = FindPattern(GetModuleHandleW(L"FortniteClient-Win64-Shipping.exe"), reinterpret_cast<const unsigned char*>("\x48\x8D\x0D\x00\x00\x00\x00\x89\x13"), "xxx????xx");
 	if (address == -1)
 	{
 		return false;
@@ -43,6 +42,12 @@ bool ObjectsStore::Initialize()
 	const auto offset = *reinterpret_cast<uint32_t*>(address + 3);
 
 	GlobalObjects = reinterpret_cast<decltype(GlobalObjects)>(address + 7 + offset);
+	
+	#ifdef _DEBUG
+		printf("offset %p \n", offset);
+		printf("GlobalObjects Found at Address %p size %i max %i \n", *(uintptr_t*)GlobalObjects, GlobalObjects->ObjObjects.NumElements, GlobalObjects->ObjObjects.MaxElements);
+		printf("example %p\n", GlobalObjects->ObjObjects);
+	#endif
 
 	return true;
 }
