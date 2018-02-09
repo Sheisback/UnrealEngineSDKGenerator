@@ -28,7 +28,8 @@ std::string MakeValidName(std::string&& name)
 			|| valid[i] == '#'
 			|| valid[i] == '\''
 			|| valid[i] == '"'
-			|| valid[i] == '%')
+			|| valid[i] == '%'
+			|| valid[i] == '@')
 		{
 			valid[i] = '_';
 		}

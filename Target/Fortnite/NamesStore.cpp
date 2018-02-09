@@ -19,10 +19,10 @@ public:
 
 	std::string GetName() const
 	{
-		int seed = 0x9C5DA3B4; // 4D 8D 42 10 BA ? ? ? ? 41 87 02
+		int seed = 0x9C5C5836; // 4D 8D 42 10 BA ? ? ? ? 41 87 02
 		char buf[1024] = {};
 
-		buf[0] = AnsiName[0] ^ 0xB4; // seed modulo 100
+		buf[0] = AnsiName[0] ^ 0x36; // seed modulo 100
 		if (buf[0])
 		{
 			auto index = 0;
@@ -58,7 +58,7 @@ public:
 		return *GetItemPtr(index);
 	}
 
-private:
+public:
 	ElementType const* const* GetItemPtr(int32_t Index) const
 	{
 		int32_t ChunkIndex = Index / ElementsPerChunk;
@@ -72,14 +72,14 @@ private:
 		ChunkTableSize = (MaxTotalElements + ElementsPerChunk - 1) / ElementsPerChunk
 	};
 
-	char UnknownData[0x1A8];
+	char UnknownData[0x1B8]; // 49 8B 84 C1 ?? ?? ?? ?? 48 8B 04 C8
 	ElementType** Chunks[ChunkTableSize];
-	char UnknownData2[0x70];
+	char UnknownData2[0x58];
 	__int32 NumElements;
 	__int32 NumChunks;
 };
 
-using TNameEntryArray = TStaticIndirectArrayThreadSafeRead<FNameEntry, 0x200000, 0x4000>;
+using TNameEntryArray = TStaticIndirectArrayThreadSafeRead<FNameEntry, 2 * 1024 * 1024, 16384>;
 
 TNameEntryArray* GlobalNames = nullptr;
 
@@ -95,6 +95,13 @@ bool NamesStore::Initialize()
 	const auto offset = *reinterpret_cast<uint32_t*>(address + 3);
 
 	GlobalNames = reinterpret_cast<decltype(GlobalNames)>(*reinterpret_cast<uintptr_t*>(address + 7 + offset));
+
+	#ifdef _DEBUG
+		printf("GlobalNames Found at Address %p \n", GlobalNames);
+		printf("GlobalNames num %p \n", GlobalNames->Num());
+		printf("Offset %p \n", offsetof(TNameEntryArray, NumElements));
+		printf("Offset %s \n", GlobalNames->GetById(0)->GetName().c_str());
+	#endif
 
 	return true;
 }
